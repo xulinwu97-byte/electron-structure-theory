@@ -542,5 +542,5 @@ body{{
 </html>
 """
 
-components.html(HTML, height=7000, scrolling=False)
+components.html(HTML, height=6000, scrolling=False)
 page_footer("vb")

@@ -1,7 +1,7 @@
 import streamlit as st
 import streamlit.components.v1 as components
 import sys, os
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '5.Huckel'))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'tools'))
 from hmo_tool import render_hmo_tool
 from utils import page_header, page_footer, divider
 

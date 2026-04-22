@@ -16,9 +16,9 @@ def img_b64(path):
     except:
         return ""
 
-img1 = img_b64("1.qm basic/1.1.png")
-img2 = img_b64("1.qm basic/1.2.png")
-img3 = img_b64("1.qm basic/1.3.png")
+img1 = img_b64("images/1.1.png")
+img2 = img_b64("images/1.2.png")
+img3 = img_b64("images/1.3.png")
 
 HTML = f"""
 <!DOCTYPE html>

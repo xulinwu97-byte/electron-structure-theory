@@ -20,11 +20,11 @@ def img_b64(path):
     except:
         return ""
 
-img_31  = img_b64("3.molecular orbital/3.1.png")
-img_321 = img_b64("3.molecular orbital/3.2.1.png")
-img_331 = img_b64("3.molecular orbital/3.3.1.png")
-img_332 = img_b64("3.molecular orbital/3.3.2.jpg")
-img_333 = img_b64("3.molecular orbital/3.3.3.png")
+img_31  = img_b64("images/3.1.png")
+img_321 = img_b64("images/3.2.1.png")
+img_331 = img_b64("images/3.3.1.png")
+img_332 = img_b64("images/3.3.2.jpg")
+img_333 = img_b64("images/3.3.3.png")
 
 HTML = f"""
 <!DOCTYPE html>
@@ -462,4 +462,4 @@ st.subheader("🔬 分子轨道能级图可视化")
 st.caption("选择分子或自定义两种原子，自动生成 MO 能级图，显示电子填充、HOMO/LUMO 与键级分析")
 render_mo_tool()
 
-page_footer("mo")   
+page_footer("mo")

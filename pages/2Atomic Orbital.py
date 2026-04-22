@@ -2,7 +2,7 @@ import streamlit as st
 import streamlit.components.v1 as components
 import base64
 import sys, os
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '2.atomic orbital'))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'tools'))
 from orbital_tool import render_tool
 from utils import load_md, page_header, page_footer, divider
 
@@ -19,12 +19,12 @@ def img_b64(path):
     except:
         return ""
 
-img_22 = img_b64("2.atomic orbital/2.2.png")
-img_23 = img_b64("2.atomic orbital/2.3.png")
-img_p  = img_b64("2.atomic orbital/p angular nodes.png")
-img_d  = img_b64("2.atomic orbital/d angular nodes.png")
-img_r  = img_b64("2.atomic orbital/radial nodes.jpg")
-img_24 = img_b64("2.atomic orbital/2.4.png")
+img_22 = img_b64("images/2.2.png")
+img_23 = img_b64("images/2.3.png")
+img_p  = img_b64("images/p angular nodes.png")
+img_d  = img_b64("images/d angular nodes.png")
+img_r  = img_b64("images/radial nodes.jpg")
+img_24 = img_b64("images/2.4.png")
 
 HTML = f"""
 <!DOCTYPE html>

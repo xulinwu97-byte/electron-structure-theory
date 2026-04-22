@@ -1,7 +1,7 @@
 import streamlit as st
 import streamlit.components.v1 as components
 import sys, os, base64
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '6.crystal field'))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'tools'))
 from cfse_tool import render_cfse_tool
 from utils import page_header, page_footer, divider
 
@@ -11,16 +11,16 @@ page_header("cft", desc="晶体场理论以简洁的静电模型，解释了过�
 
 # ── 图片 base64 加载 ──────────────────────────────────
 def img_b64(rel_path):
-    base = os.path.join(os.path.dirname(__file__), '..', rel_path)
+    base = rel_path
     with open(base, 'rb') as f:
         return base64.b64encode(f.read()).decode()
 
-img_61  = img_b64('6.crystal field/6_1.png')
-img_62  = img_b64('6.crystal field/6_2.png')
-img_63  = img_b64('6.crystal field/6_3.png')
-img_641 = img_b64('6.crystal field/6_4_1.png')
-img_642 = img_b64('6.crystal field/6_4_2.png')
-img_65  = img_b64('6.crystal field/6_5.png')
+img_61  = img_b64('images/6_1.png')
+img_62  = img_b64('images/6_2.png')
+img_63  = img_b64('images/6_3.png')
+img_641 = img_b64('images/6_4_1.png')
+img_642 = img_b64('images/6_4_2.png')
+img_65  = img_b64('images/6_5.png')
 
 # ── 公式变量 ─────────────────────────────────────────
 f_dd   = r'\( E_{\mathrm{photon}} = h\nu = \Delta_o \)'

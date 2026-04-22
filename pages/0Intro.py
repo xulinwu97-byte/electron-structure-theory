@@ -17,11 +17,11 @@ def img_to_b64(path):
     except:
         return ""
 
-img1 = img_to_b64("0.intro/1.png")
-img2 = img_to_b64("0.intro/2.png")
-img3 = img_to_b64("0.intro/3.png")
-img4 = img_to_b64("0.intro/4.png")
-img5 = img_to_b64("0.intro/5.png")
+img1 = img_to_b64("images/1.png")
+img2 = img_to_b64("images/2.png")
+img3 = img_to_b64("images/3.png")
+img4 = img_to_b64("images/4.png")
+img5 = img_to_b64("images/5.png")
 
 # ── 主体 HTML ────────────────────────────────────────────
 HTML = f"""

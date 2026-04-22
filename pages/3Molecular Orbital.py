@@ -2,7 +2,7 @@ import streamlit as st
 import streamlit.components.v1 as components
 import base64
 import sys, os
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '3.molecular orbital'))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'tools'))
 from mo_tool import render_mo_tool
 import plotly.graph_objects as go
 from utils import load_md, page_header, page_footer, divider

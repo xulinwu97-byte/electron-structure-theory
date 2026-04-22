@@ -13,6 +13,8 @@ MODULES = [
     {"key": "hmo",   "title": "Hückel 分子轨道", "en": "Hückel MO",         "tag": "HMO",  "tag_bg": "#EAF3DE", "tag_col": "#27500A", "accent": "#97C459", "dot": "#97C459", "path": "pages/5Huckel.py"},
     {"key": "cft",   "title": "晶体场理论",      "en": "Crystal Field",     "tag": "CFT",  "tag_bg": "#FAECE7", "tag_col": "#712B13", "accent": "#F0997B", "dot": "#F0997B", "path": "pages/6Crystal Field.py"},
     {"key": "lft",   "title": "配位场理论",      "en": "Ligand Field",      "tag": "LFT",  "tag_bg": "#FBEAF0", "tag_col": "#72243E", "accent": "#ED93B1", "dot": "#ED93B1", "path": "pages/7Ligand Field.py"},
+    {"key": "summary", "title": "理论总结",      "en": "Summary",           "tag": "总结", "tag_bg": "#EEF2F7", "tag_col": "#2C3E50", "accent": "#607D8B", "dot": "#607D8B", "path": "pages/8Summary.py"},
+    
 ]
 
 def _get(key):

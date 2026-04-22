@@ -10,6 +10,7 @@ st.set_page_config(layout="wide", page_title="晶体场理论", page_icon="🔮"
 page_header("cft", desc="晶体场理论以简洁的静电模型，解释了过渡金属配合物的颜色、磁性与稳定性——配位化学最重要的理论基础之一。")
 
 # ── 图片 base64 加载 ──────────────────────────────────
+@st.cache_data
 def img_b64(rel_path):
     base = rel_path
     with open(base, 'rb') as f:

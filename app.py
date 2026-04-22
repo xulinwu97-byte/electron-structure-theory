@@ -15,7 +15,7 @@ MODULES = [
     {"key": "hmo",      "title": "Hückel 分子轨道", "tag": "HMO",  "tag_bg": "#EAF3DE", "tag_col": "#27500A", "dot": "#97C459", "path": "pages/5Huckel.py"},
     {"key": "cft",      "title": "晶体场理论",      "tag": "CFT",  "tag_bg": "#FAECE7", "tag_col": "#712B13", "dot": "#F0997B", "path": "pages/6Crystal Field.py"},
     {"key": "lft",      "title": "配位场理论",      "tag": "LFT",  "tag_bg": "#FBEAF0", "tag_col": "#72243E", "dot": "#ED93B1", "path": "pages/7Ligand Field.py"},
-    {"key": "summary",  "title": "理论总结",        "tag": "总结", "tag_bg": "#EEF2F7", "tag_col": "#2C3E50", "dot": "#607D8B", "path": "pages/9Summary.py"},
+    {"key": "summary",  "title": "理论总结",        "tag": "总结", "tag_bg": "#EEF2F7", "tag_col": "#2C3E50", "dot": "#607D8B", "path": "pages/8Summary.py"},
 ]
 
 # ── CSS ──────────────────────────────────────────────────────
@@ -150,7 +150,7 @@ modules_data = [
     ("📈", "Hückel 分子轨道", "π 共轭体系与能级计算",            "#97C459", "HMO",  "pages/5Huckel.py"),
     ("💎", "晶体场理论",      "配位场中 d 轨道的能级分裂",        "#F0997B", "CFT",  "pages/6Crystal Field.py"),
     ("🌈", "配位场理论",      "金属与配体的分子轨道相互作用",     "#ED93B1", "LFT",  "pages/7Ligand Field.py"),
-    ("📊", "理论总结",        "各理论适用范围与优缺点横向对比",   "#607D8B", "总结", "pages/9Summary.py"),
+    ("📊", "理论总结",        "各理论适用范围与优缺点横向对比",   "#607D8B", "总结", "pages/8Summary.py"),
 ]
 
 st.markdown("""

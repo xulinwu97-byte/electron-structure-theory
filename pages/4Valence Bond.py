@@ -3,13 +3,12 @@ import streamlit.components.v1 as components
 import base64
 import sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'tools'))
-from mo_tool import render_mo_tool
-import plotly.graph_objects as go
+from resonance_widget import RESONANCE_HTML
 from utils import load_md, page_header, page_footer, divider
 
-st.set_page_config(layout="wide", page_title="分子轨道理论", page_icon="🔗")
+st.set_page_config(layout="wide", page_title="价键理论", page_icon="🔗")
 
-page_header("mo", desc="原子轨道通过线性组合形成分子轨道，电子在整个分子范围内离域运动。LCAO 近似是分子轨道理论的核心计算方法。")
+page_header("vb", desc="价键理论从电子的定域化配对出发描述化学键，以其直观性和对分子几何构型的强解释力，与分子轨道理论形成互补。")
 
 def img_b64(path):
     try:
@@ -20,11 +19,24 @@ def img_b64(path):
     except:
         return ""
 
-img_31  = img_b64("images/3.1.png")
-img_321 = img_b64("images/3.2.1.png")
-img_331 = img_b64("images/3.3.1.png")
-img_332 = img_b64("images/3.3.2.jpg")
-img_333 = img_b64("images/3.3.3.png")
+img_41  = img_b64("images/4.1.jpg")
+img_431 = img_b64("images/4.3.1.jpeg")
+img_432 = img_b64("images/4.3.2.jpeg")
+img_433 = img_b64("images/4.3.3.jpeg")
+img_434 = img_b64("images/4.3.4.jpeg")
+img_441 = img_b64("images/4.4.1.jpeg")
+img_442 = img_b64("images/4.4.2.jpeg")
+img_443 = img_b64("images/4.4.3.jpeg")
+img_444 = img_b64("images/4.4.4.jpeg")
+img_445 = img_b64("images/4.4.5.png")
+
+# 把复杂公式提前定义，避免 f-string 花括号冲突
+f_mo = r'\( \Psi_{\mathrm{MO}} \approx \psi_A + \psi_B \)'
+f_vb = r'\( \Psi_{\mathrm{VB}} \approx \psi_A \psi_B \)'
+f_cov = r'\( \Psi_{\mathrm{cov}} = \frac{1}{\sqrt{2(1+S^2)}} \left[ \psi_A(1)\psi_B(2) + \psi_B(1)\psi_A(2) \right] \)'
+f_spin = r'\( \Phi_{\mathrm{spin}} = \frac{1}{\sqrt{2}} \left[ \alpha(1)\beta(2) - \beta(1)\alpha(2) \right] \)'
+f_hl = r'\( \Psi_{\mathrm{HL}} = \Psi_{\mathrm{cov}} \cdot \Phi_{\mathrm{spin}} \)'
+f_s = r'\( S = \int \psi_A \psi_B \, d\tau \)'
 
 HTML = f"""
 <!DOCTYPE html>
@@ -40,7 +52,7 @@ body{{
 }}
 .lead{{
     font-size:16px;color:#555;line-height:1.9;max-width:720px;
-    margin-bottom:3rem;padding-left:1.2rem;border-left:3px solid #378ADD;
+    margin-bottom:3rem;padding-left:1.2rem;border-left:3px solid #EF9F27;
 }}
 .section{{margin-bottom:3.5rem}}
 .section-header{{
@@ -48,16 +60,14 @@ body{{
     margin-bottom:1.4rem;padding-bottom:0.75rem;
     border-bottom:0.5px solid #f0f0f0;
 }}
-.section-num{{font-size:12px;font-weight:600;color:#378ADD;letter-spacing:0.05em}}
+.section-num{{font-size:12px;font-weight:600;color:#EF9F27;letter-spacing:0.05em}}
 .section-title{{font-size:20px;font-weight:700;letter-spacing:-0.01em;color:#1a1a1a}}
-.sub-num{{font-size:11px;font-weight:600;color:#378ADD;letter-spacing:0.05em}}
-.sub-title{{font-size:17px;font-weight:700;color:#1a1a1a}}
-.sub-header{{display:flex;align-items:baseline;gap:10px;margin:1.5rem 0 0.75rem;padding-bottom:0.5rem;border-bottom:0.5px solid #f5f5f5}}
 .body-text{{font-size:15px;color:#444;line-height:1.9;max-width:740px;margin-bottom:1rem}}
 .body-text strong{{color:#1a1a1a;font-weight:600}}
 
-.two-col{{display:grid;grid-template-columns:1fr 320px;gap:2rem;align-items:start}}
+.two-col{{display:grid;grid-template-columns:1fr 340px;gap:2rem;align-items:start}}
 .two-col-rev{{display:grid;grid-template-columns:360px 1fr;gap:2rem;align-items:start}}
+.two-col-eq{{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;align-items:start}}
 
 .img-card{{border-radius:14px;overflow:hidden;border:0.5px solid #eee;background:#fafafa}}
 .img-card img{{width:100%;display:block}}
@@ -66,400 +76,471 @@ body{{
 .img-full img{{width:100%;display:block}}
 .img-full .img-caption{{border-top:0.5px solid #eee}}
 
-.formula-box{{
-    background:#E6F1FB;border-radius:14px;
-    padding:1.2rem 1.5rem;margin:1rem 0;
-    border:0.5px solid #B5D4F4;text-align:center;
-    font-size:20px;color:#0C447C;
-}}
-.formula-terms{{
-    display:flex;gap:10px;margin-top:0.75rem;justify-content:center;flex-wrap:wrap;
-}}
-.f-term{{
-    background:white;border-radius:10px;padding:0.6rem 1rem;
-    text-align:center;border:0.5px solid #B5D4F4;
-    font-size:13px;color:#555;
-}}
-.f-term strong{{color:#185FA5}}
-
 .blockquote{{
-    border-left:3px solid #378ADD;background:#E6F1FB18;
+    border-left:3px solid #EF9F27;background:#FAEEDA18;
     padding:0.75rem 1.2rem;border-radius:0 10px 10px 0;
-    font-size:15px;color:#0C447C;margin:1rem 0;
+    font-size:15px;color:#633806;margin:1rem 0;
+}}
+.formula-box{{
+    background:#FAEEDA;border-radius:14px;
+    padding:1.2rem 1.5rem;margin:1rem 0;
+    border:0.5px solid #F0C060;text-align:center;
+    font-size:18px;color:#633806;
 }}
 
-/* 表格 */
-.mo-table{{width:100%;border-collapse:collapse;font-size:13px;margin:1rem 0}}
-.mo-table th{{
-    background:#E6F1FB;padding:8px 12px;
-    border:1px solid #B5D4F4;font-weight:600;
-    color:#0C447C;text-align:left;
-}}
-.mo-table td{{padding:8px 12px;border:1px solid #eee;color:#444;vertical-align:top}}
-.mo-table tr:hover td{{background:#f8fbff}}
-
-/* 三原则卡片 */
-.principles{{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:1.25rem 0}}
-.prin-card{{border-radius:14px;padding:1.2rem;border:0.5px solid #eee;background:#fafafa}}
-.prin-num{{
-    width:32px;height:32px;border-radius:50%;
-    display:flex;align-items:center;justify-content:center;
-    font-size:14px;font-weight:700;margin-bottom:10px;
-}}
-.prin-title{{font-size:14px;font-weight:700;color:#1a1a1a;margin-bottom:4px}}
-.prin-en{{font-size:11px;color:#aaa;margin-bottom:8px;font-style:italic}}
-.prin-desc{{font-size:12px;color:#555;line-height:1.65}}
-
-/* 成键/反键对比 */
-.bond-grid{{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:1rem 0}}
-.bond-card{{border-radius:14px;padding:1.2rem;border:0.5px solid #eee}}
-.bond-title{{font-size:13px;font-weight:700;margin-bottom:6px}}
-.bond-formula{{font-size:15px;margin:6px 0;text-align:center}}
-.bond-desc{{font-size:12px;color:#555;line-height:1.65}}
-.bond-badge{{
+/* MO vs VB 对比 */
+.compare-grid{{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:1.25rem 0}}
+.compare-card{{border-radius:14px;padding:1.2rem;border:0.5px solid #eee;background:#fafafa}}
+.compare-title{{font-size:13px;font-weight:700;margin-bottom:8px}}
+.compare-formula{{font-size:16px;text-align:center;margin:8px 0}}
+.compare-desc{{font-size:12px;color:#555;line-height:1.65}}
+.compare-badge{{
     display:inline-block;font-size:11px;padding:3px 9px;
     border-radius:99px;font-weight:500;margin-top:8px;
 }}
 
-/* HOMO LUMO */
-.homo-lumo{{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:1rem 0}}
-.hl-card{{border-radius:14px;padding:1.2rem;text-align:center}}
-
-/* 填充规则 */
-.fill-rules{{display:flex;flex-direction:column;gap:8px;margin:1rem 0}}
-.fill-rule{{
-    display:flex;align-items:center;gap:12px;
-    background:#fafafa;border-radius:10px;padding:0.75rem 1rem;
-    border:0.5px solid #eee;
-}}
-.fill-num{{
-    width:24px;height:24px;border-radius:50%;
+/* 基本假设卡片 */
+.assume-grid{{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:1.25rem 0}}
+.assume-card{{border-radius:14px;padding:1.1rem;border:0.5px solid #F0C060;background:#FAEEDA18}}
+.assume-num{{
+    width:26px;height:26px;border-radius:50%;
+    background:#FAEEDA;color:#633806;
     display:flex;align-items:center;justify-content:center;
-    font-size:12px;font-weight:700;flex-shrink:0;
+    font-size:12px;font-weight:700;margin-bottom:8px;
 }}
-.fill-text{{font-size:13px;color:#444}}
-.fill-text strong{{color:#1a1a1a}}
+.assume-title{{font-size:13px;font-weight:700;color:#1a1a1a;margin-bottom:5px}}
+.assume-desc{{font-size:12px;color:#555;line-height:1.65}}
 
-/* 键级 */
-.bond-order-box{{
-    background:linear-gradient(135deg,#E6F1FB,#EEEDFE);
-    border-radius:16px;padding:1.5rem 2rem;margin:1rem 0;
-    border:0.5px solid #B5D4F4;
+/* 波函数推导 */
+.wf-box{{
+    background:#fafafa;border-radius:14px;padding:1.25rem 1.5rem;
+    border:0.5px solid #eee;margin:1rem 0;
 }}
-.bo-formula{{font-size:22px;text-align:center;color:#185FA5;margin-bottom:1rem}}
-.bo-grid{{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:0.75rem}}
-.bo-item{{
-    background:white;border-radius:10px;padding:0.75rem;
-    text-align:center;border:0.5px solid #B5D4F4;
-    font-size:12px;color:#555;
+.wf-title{{font-size:12px;font-weight:600;color:#888;text-transform:uppercase;
+    letter-spacing:0.07em;margin-bottom:10px;}}
+.wf-step{{
+    display:flex;align-items:center;gap:12px;
+    padding:8px 0;border-bottom:0.5px solid #f5f5f5;
+    font-size:14px;color:#444;
 }}
-.bo-item strong{{color:#185FA5;font-size:14px;display:block;margin-bottom:2px}}
-
-.quote{{
-    background:linear-gradient(135deg,#E6F1FB,#EEEDFE);
-    border-radius:16px;padding:1.5rem 2rem;margin-top:2rem;
-    font-size:16px;font-weight:600;color:#185FA5;
-    line-height:1.6;text-align:center;
+.wf-step:last-child{{border-bottom:none}}
+.wf-step-label{{
+    font-size:11px;color:#aaa;width:60px;flex-shrink:0;text-align:right;
 }}
 
-.summary-box{{
+/* σ/π 键对比 */
+.bond-grid{{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:1.25rem 0}}
+.bond-card{{border-radius:14px;padding:1.2rem;border:0.5px solid #eee}}
+.bond-sym{{font-size:28px;font-weight:800;margin-bottom:6px}}
+.bond-title{{font-size:13px;font-weight:700;margin-bottom:6px}}
+.bond-desc{{font-size:12px;color:#555;line-height:1.65}}
+.bond-ex{{font-size:11px;padding:3px 9px;border-radius:99px;
+    font-weight:500;display:inline-block;margin-top:6px}}
+
+/* 重叠类型图示区 */
+.overlap-row{{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:1rem 0}}
+
+/* 杂化类型表格 */
+.hyb-table{{width:100%;border-collapse:collapse;font-size:13px;margin:1rem 0}}
+.hyb-table th{{
+    background:#FAEEDA;padding:8px 12px;
+    border:1px solid #F0C060;font-weight:600;
+    color:#633806;text-align:left;
+}}
+.hyb-table td{{padding:8px 12px;border:1px solid #eee;color:#444;vertical-align:top}}
+.hyb-table tr:hover td{{background:#FFFDF5}}
+.hyb-badge{{
+    display:inline-block;font-size:11px;padding:2px 8px;
+    border-radius:6px;font-weight:700;
+}}
+
+/* 杂化图片组 */
+.hyb-imgs{{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:1.25rem 0}}
+
+/* 共振论 */
+.resonance-rules{{
     background:#fafafa;border-radius:14px;padding:1.2rem 1.5rem;
     border:0.5px solid #eee;margin:1rem 0;
 }}
-.summary-title{{font-size:12px;font-weight:600;color:#888;text-transform:uppercase;
+.res-title{{font-size:12px;font-weight:600;color:#888;text-transform:uppercase;
     letter-spacing:0.07em;margin-bottom:10px}}
-.summary-grid{{display:grid;grid-template-columns:1fr 1fr;gap:10px}}
-.summary-item{{font-size:13px;color:#444;line-height:1.6}}
-.summary-item strong{{color:#1a1a1a}}
+.res-grid{{display:grid;grid-template-columns:1fr 1fr;gap:12px}}
+.res-item{{
+    font-size:13px;color:#444;padding:8px 10px;
+    background:white;border-radius:8px;border:0.5px solid #eee;
+    line-height:1.6;
+}}
+.res-item strong{{color:#1a1a1a}}
+
+/* MO vs VB 补充 */
+.mv-grid{{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:1rem 0}}
+.mv-card{{border-radius:14px;padding:1.2rem;border:0.5px solid #eee;background:#fafafa}}
+.mv-title{{font-size:13px;font-weight:700;margin-bottom:8px}}
+.mv-formula{{
+    background:white;border-radius:10px;padding:0.75rem;
+    border:0.5px solid #eee;font-size:14px;text-align:center;
+    margin:6px 0;
+}}
+.mv-desc{{font-size:12px;color:#555;line-height:1.65;margin-top:6px}}
+
+.quote{{
+    background:linear-gradient(135deg,#FAEEDA,#EEEDFE);
+    border-radius:16px;padding:1.5rem 2rem;margin-top:2rem;
+    font-size:16px;font-weight:600;color:#633806;
+    line-height:1.6;text-align:center;
+}}
+
+.note-box{{
+    background:#fafafa;border-radius:10px;padding:0.85rem 1.2rem;
+    border:0.5px solid #eee;font-size:13px;color:#666;
+    margin:0.75rem 0;line-height:1.65;
+}}
+.note-box strong{{color:#1a1a1a}}
 </style>
 </head>
 <body>
 
 <p class="lead">
-  当两个或多个原子相互接近形成分子时，电子不再局限于单个原子，而是在整个分子范围内运动。
-  用于描述这种离域状态的轨道称为<strong>分子轨道（Molecular Orbital, MO）</strong>。
-  分子轨道理论采用<strong>原子轨道线性组合近似（LCAO）</strong>处理这一问题。
+  价键理论从电子的<strong>定域化配对</strong>出发描述化学键，是理解分子结构和成键方式的重要理论框架。
+  它与分子轨道理论从不同角度刻画电子行为，在化学中具有高度的互补性。
 </p>
 
-<!-- 3.1 LCAO 近似 -->
+<!-- 4.1 为什么需要价键理论 -->
 <div class="section">
   <div class="section-header">
-    <span class="section-num">3.1</span>
-    <span class="section-title">分子轨道的形成：LCAO 近似</span>
+    <span class="section-num">4.1</span>
+    <span class="section-title">我们为什么需要价键理论？</span>
   </div>
   <div class="two-col">
     <div>
       <p class="body-text">
-        由于直接求解分子体系的薛定谔方程在数学上极其困难，分子轨道理论采用
-        <strong>原子轨道线性组合（LCAO）</strong>近似。以双原子分子为例，
-        分子轨道波函数可表示为：
+        分子轨道理论将电子视为<strong>非定域的独立运动粒子</strong>，
+        不显式考虑电子间的相关性。以 H₂ 为例，简单 MO 理论等权重地考虑共价结构与离子结构：
       </p>
-      <div class="formula-box">
-        \( \Psi_{{\text{{MO}}}} = c_A \psi_A + c_B \psi_B \)
-        <div class="formula-terms">
-          <div class="f-term"><strong>\(\Psi_{{\text{{MO}}}}\)</strong><br>分子轨道波函数</div>
-          <div class="f-term"><strong>\(\psi_A, \psi_B\)</strong><br>原子轨道波函数</div>
-          <div class="f-term"><strong>\(c_A, c_B\)</strong><br>组合系数（贡献权重）</div>
+      <div class="compare-grid">
+        <div class="compare-card" style="border-color:#B5D4F4">
+          <div class="compare-title" style="color:#185FA5">MO 理论</div>
+         <div class="compare-formula">{f_mo}</div>
+          <div class="compare-desc">
+            电子非定域，等权重考虑共价与离子结构，
+            会<strong>高估离子性</strong>，低估电子间排斥。
+          </div>
+          <span class="compare-badge" style="background:#E6F1FB;color:#0C447C">适合离域体系</span>
         </div>
-      </div>
-      <div class="blockquote">
-        LCAO 满足一个基本守恒关系：<br>
-        <strong>生成的分子轨道总数 = 参与组合的原子轨道总数</strong><br>
-        轨道只会重组与分裂，不会凭空产生或消失。
+        <div class="compare-card" style="border-color:#F0C060">
+          <div class="compare-title" style="color:#633806">VB 理论</div>
+          <div class="compare-formula">{f_vb}</div>
+          <div class="compare-desc">
+            电子定域化，天然强调共价结构，
+            在描述 H₂ 的非极性特征时<strong>更加合理</strong>。
+          </div>
+          <span class="compare-badge" style="background:#FAEEDA;color:#633806">适合定域键</span>
+        </div>
       </div>
     </div>
     <div class="img-card">
-      <img src="{img_31}" alt="H2 分子轨道形成示意">
-      <div class="img-caption">H₂ 分子：1s 轨道组合形成 σ 成键轨道与 σ* 反键轨道</div>
+      <img src="{img_41}" alt="H2 共价键示意">
+      <div class="img-caption">H₂ 分子：两个氢原子的 1s 轨道重叠形成共价键</div>
     </div>
   </div>
 </div>
 
-<!-- 3.2 LCAO 组合规则 -->
+<!-- 4.2 核心思想与基本假设 -->
 <div class="section">
   <div class="section-header">
-    <span class="section-num">3.2</span>
-    <span class="section-title">LCAO 组合规则</span>
+    <span class="section-num">4.2</span>
+    <span class="section-title">核心思想与基本假设</span>
+  </div>
+  <div class="blockquote">
+    共价键由两个原子轨道的重叠及一对<strong>自旋相反的电子</strong>形成。
+  </div>
+  <div class="assume-grid">
+    <div class="assume-card">
+      <div class="assume-num">①</div>
+      <div class="assume-title">电子定域化</div>
+      <div class="assume-desc">电子对主要分布在两个原子核之间，而非遍布整个分子。</div>
+    </div>
+    <div class="assume-card">
+      <div class="assume-num">②</div>
+      <div class="assume-title">成键条件</div>
+      <div class="assume-desc">两个原子轨道中各含一个未配对电子，且自旋方向相反。</div>
+    </div>
+    <div class="assume-card">
+      <div class="assume-num">③</div>
+      <div class="assume-title">最大重叠原则</div>
+      <div class="assume-desc">轨道重叠越大，化学键越强。键的方向性由最大重叠方向决定。</div>
+    </div>
+  </div>
+
+  <div class="wf-box" style="margin-top:1.5rem">
+    <div class="wf-title">H₂ 分子的 Heitler–London 波函数推导</div>
+    <div class="wf-step">
+        <div class="wf-step-label">空间部分</div>
+        <div>{f_cov}</div>
+    </div>
+    <div class="wf-step">
+        <div class="wf-step-label">自旋部分</div>
+        <div>{f_spin}</div>
+    </div>
+    <div class="wf-step">
+         <div class="wf-step-label">完整波函数</div>
+        <div>{f_hl}</div>
+    </div>
+    <div style="font-size:12px;color:#888;margin-top:10px">
+        其中 {f_s} 为重叠积分，电子 1、2 不可区分，故取两种分配方式之和。
+    </div>
+  </div>
+</div>
+
+<!-- 4.3 轨道重叠与键的类型 -->
+<div class="section">
+  <div class="section-header">
+    <span class="section-num">4.3</span>
+    <span class="section-title">轨道重叠与键的类型</span>
   </div>
   <p class="body-text">
-    并非任意原子轨道都能有效组合形成分子轨道。有效的 LCAO 组合需同时满足以下三个基本条件：
+    根据轨道重叠方式，共价键可分为两种基本类型。σ 键总是先形成，π 键在其基础上附加形成，
+    因此多重键通常更短、更强。
   </p>
-  <div class="principles">
-    <div class="prin-card" style="border-color:#B5D4F4">
-      <div class="prin-num" style="background:#E6F1FB;color:#185FA5">①</div>
-      <div class="prin-title">对称性匹配原则</div>
-      <div class="prin-en">Symmetry Match</div>
-      <div class="prin-desc">
-        参与组合的原子轨道必须具有<strong>相同的对称性</strong>才能发生有效重叠。
-        以键轴（z 轴）为参考，绕轴旋转时波函数符号不变的为 σ 对称，
-        符号改变的为 π 对称。只有同类对称性的轨道才能组合。
-      </div>
-    </div>
-    <div class="prin-card" style="border-color:#9FE1CB">
-      <div class="prin-num" style="background:#E1F5EE;color:#085041">②</div>
-      <div class="prin-title">能量相近原则</div>
-      <div class="prin-en">Energy Proximity</div>
-      <div class="prin-desc">
-        参与组合的原子轨道能量必须<strong>彼此接近</strong>，才能发生显著耦合。
-        能量相同时耦合最强（如 H₂ 中两个 1s）；
-        能量差越大，耦合越弱，轨道越保持原子特征（如 HF 中 H(1s) 与 F(2p)）。
-      </div>
-    </div>
-    <div class="prin-card" style="border-color:#CECBF6">
-      <div class="prin-num" style="background:#EEEDFE;color:#3C3489">③</div>
-      <div class="prin-title">最大重叠原则</div>
-      <div class="prin-en">Maximum Overlap</div>
-      <div class="prin-desc">
-        原子轨道之间必须有足够的<strong>空间重叠</strong>。
-        重叠积分 \(S_{{AB}} = \int \psi_A^* \psi_B \, d\tau\) 越大，
-        成键作用越强，能级分裂越大，体系越稳定。
-      </div>
-    </div>
-  </div>
-
-  <!-- 3.2.1 对称性匹配 -->
-  <div class="sub-header">
-    <span class="sub-num">3.2.1</span>
-    <span class="sub-title">对称性匹配与 σ/π/δ 分类</span>
-  </div>
-  <div class="two-col-rev">
-    <div class="img-card">
-      <img src="{img_321}" alt="对称性匹配">
-      <div class="img-caption">σ、π 键的形成：轨道对称性决定组合类型</div>
-    </div>
-    <div>
-      <table class="mo-table">
-        <tr>
-          <th>原子轨道</th>
-          <th>对称性</th>
-          <th>MO 类型</th>
-          <th>成键类型</th>
-        </tr>
-        <tr><td>\(s\)</td><td>绕 z 轴旋转对称（C∞）</td><td>σ 对称</td><td>σ 键</td></tr>
-        <tr><td>\(p_z\)</td><td>绕 z 轴旋转对称</td><td>σ 对称</td><td>σ 键</td></tr>
-        <tr><td>\(p_x, p_y\)</td><td>旋转 180° 后符号改变</td><td>π 对称</td><td>π 键</td></tr>
-        <tr><td>\(d_{{z^2}}\)</td><td>绕 z 轴旋转对称</td><td>σ 对称</td><td>σ 键</td></tr>
-        <tr><td>\(d_{{xz}}, d_{{yz}}\)</td><td>与 p_x, p_y 类似</td><td>π 对称</td><td>π 键</td></tr>
-        <tr><td>\(d_{{x^2-y^2}}, d_{{xy}}\)</td><td>旋转 90°/45° 符号改变</td><td>δ 对称</td><td>δ 键</td></tr>
-      </table>
-      <div style="background:#fafafa;border-radius:10px;padding:0.75rem 1rem;
-                  border:0.5px solid #eee;font-size:13px;color:#444;margin-top:0.75rem">
-        对于具有反演中心的分子（同核双原子），还需满足<strong>g/u 对称性匹配</strong>：
-        g 只与 g 组合，u 只与 u 组合（g = 反演不变，u = 反演改变符号）。
-      </div>
-    </div>
-  </div>
-
-  <!-- 3.2.2 能量相近 + 成键/反键 -->
-  <div class="sub-header">
-    <span class="sub-num">3.2.2</span>
-    <span class="sub-title">能量相近原则与成键/反键轨道</span>
-  </div>
   <div class="bond-grid">
-    <div class="bond-card" style="border-color:#9FE1CB;background:#E1F5EE18">
-      <div class="bond-title" style="color:#085041">✓ 成键轨道（Bonding MO）</div>
-      <div class="bond-formula">\( \Psi_b = \psi_A + \psi_B \)</div>
+    <div class="bond-card" style="border-color:#F0C060;background:#FAEEDA18">
+      <div class="bond-sym" style="color:#633806">σ</div>
+      <div class="bond-title">σ 键 — 轴向重叠</div>
       <div class="bond-desc">
-        同相叠加（constructive interference），核间电子密度<strong>增大</strong>，
-        能量<strong>低于</strong>原子轨道，有利于稳定分子。
+        沿核间轴<strong>头对头</strong>重叠，电子密度集中于键轴上。
+        键强度大，是单键的基础，也是多重键必有的组成部分。
+        可自由旋转（旋转不破坏对称性）。
       </div>
-      <span class="bond-badge" style="background:#E1F5EE;color:#085041">能量降低 · 稳定分子</span>
+      <span class="bond-ex" style="background:#FAEEDA;color:#633806">
+        s–s · s–p · p–p 头对头
+      </span>
     </div>
-    <div class="bond-card" style="border-color:#F5C4B3;background:#FAECE718">
-      <div class="bond-title" style="color:#712B13">✗ 反键轨道（Antibonding MO）</div>
-      <div class="bond-formula">\( \Psi_a = \psi_A - \psi_B \)</div>
+    <div class="bond-card" style="border-color:#CECBF6;background:#EEEDFE18">
+      <div class="bond-sym" style="color:#3C3489">π</div>
+      <div class="bond-title">π 键 — 侧向重叠</div>
       <div class="bond-desc">
-        反相叠加（destructive interference），核间出现<strong>节点</strong>，
-        能量<strong>高于</strong>原子轨道，削弱化学键。
+        平行轨道<strong>肩并肩</strong>重叠，电子密度分布于键轴两侧。
+        强度小于 σ 键，<strong>不能自由旋转</strong>（旋转会破坏重叠）。
+        化学反应常发生在 π 键位置。
       </div>
-      <span class="bond-badge" style="background:#FAECE7;color:#712B13">能量升高 · 削弱成键</span>
+      <span class="bond-ex" style="background:#EEEDFE;color:#3C3489">
+        p–p 侧向 · 多重键中附加形成
+      </span>
     </div>
   </div>
-  <div class="img-full">
-    <img src="{img_332}" alt="MO能级图">
-    <div class="img-caption">N₂ 分子轨道能级图（左）与各分子轨道形状（右）</div>
+
+  <div class="overlap-row">
+    <div class="img-card">
+      <img src="{img_431}" alt="σ键重叠方式">
+      <div class="img-caption">σ 键的三种重叠方式：s-s、s-p、p-p 头对头</div>
+    </div>
+    <div class="img-card">
+      <img src="{img_432}" alt="π键重叠方式">
+      <div class="img-caption">π 键：p-p 侧向重叠，电子密度在键轴两侧</div>
+    </div>
+  </div>
+  <div class="overlap-row">
+    <div class="img-card">
+      <img src="{img_433}" alt="双键中的σ和π">
+      <div class="img-caption">双键（1σ + 1π）：以乙烯 C₂H₄ 为例</div>
+    </div>
+    <div class="img-card">
+      <img src="{img_434}" alt="三键中的σ和π">
+      <div class="img-caption">三键（1σ + 2π）：以乙炔 C₂H₂ 为例</div>
+    </div>
+  </div>
+  <div class="note-box">
+    一般而言键强度：<strong>σ &gt; π</strong>，因此 σ 键更稳定，π 键更易断裂。
+    双键键能 &lt; 单键的两倍，三键键能 &lt; 单键的三倍，说明 π 键比 σ 键弱。
   </div>
 </div>
 
-<!-- 3.3 MO 排布与键级 -->
+<!-- 4.4 杂化 -->
 <div class="section">
   <div class="section-header">
-    <span class="section-num">3.3</span>
-    <span class="section-title">分子轨道的排布与键级</span>
+    <span class="section-num">4.4</span>
+    <span class="section-title">原子轨道杂化（Hybridization）</span>
   </div>
+  <p class="body-text">
+    杂化理论用于解释分子的几何构型和键的等价性问题。许多分子（如 CH₄、H₂O）的键角和对称性
+    无法仅用原始 s、p 轨道解释。价键理论认为，在成键前原子将能量相近的价层轨道进行
+    <strong>线性组合</strong>，形成一组新的杂化轨道，具有更强的方向性和更大的重叠能力。
+  </p>
 
-  <!-- 3.3.1 能级图 -->
-  <div class="sub-header">
-    <span class="sub-num">3.3.1</span>
-    <span class="sub-title">分子轨道能级图</span>
-  </div>
-  <div class="two-col">
-    <div>
-      <p class="body-text">
-        将所有形成的分子轨道按能量由低到高排列，可得到
-        <strong>分子轨道能级图（MO diagram）</strong>。
-        能级图中的约定：
-      </p>
-      <div class="fill-rules">
-        <div class="fill-rule">
-          <div style="width:8px;height:8px;border-radius:2px;background:#378ADD;flex-shrink:0"></div>
-          <div class="fill-text">纵轴表示<strong>能量</strong>，向上能量增加</div>
-        </div>
-        <div class="fill-rule">
-          <div style="width:8px;height:8px;border-radius:2px;background:#5DCAA5;flex-shrink:0"></div>
-          <div class="fill-text">越靠<strong>下</strong>的轨道能量越低、越稳定、越先被填充</div>
-        </div>
-        <div class="fill-rule">
-          <div style="width:8px;height:8px;border-radius:2px;background:#F0997B;flex-shrink:0"></div>
-          <div class="fill-text">越靠<strong>上</strong>的轨道越难被占据，基态通常为空轨道</div>
-        </div>
-      </div>
+  <table class="hyb-table">
+    <tr>
+      <th>杂化类型</th>
+      <th>组成轨道</th>
+      <th>几何构型</th>
+      <th>理想键角</th>
+      <th>典型例子</th>
+    </tr>
+    <tr>
+      <td><span class="hyb-badge" style="background:#E1F5EE;color:#085041">sp</span></td>
+      <td>1s + 1p</td><td>直线形</td><td>180°</td><td>BeCl₂, CO₂, C₂H₂</td>
+    </tr>
+    <tr>
+      <td><span class="hyb-badge" style="background:#E6F1FB;color:#0C447C">sp²</span></td>
+      <td>1s + 2p</td><td>平面三角形</td><td>120°</td><td>BCl₃, C₂H₄, 苯</td>
+    </tr>
+    <tr>
+      <td><span class="hyb-badge" style="background:#FAEEDA;color:#633806">sp³</span></td>
+      <td>1s + 3p</td><td>正四面体</td><td>109.5°</td><td>CH₄, NH₃, H₂O</td>
+    </tr>
+    <tr>
+      <td><span class="hyb-badge" style="background:#EEEDFE;color:#3C3489">sp³d</span></td>
+      <td>1s + 3p + 1d</td><td>三角双锥</td><td>90°/120°</td><td>PCl₅</td>
+    </tr>
+    <tr>
+      <td><span class="hyb-badge" style="background:#FAECE7;color:#712B13">sp³d²</span></td>
+      <td>1s + 3p + 2d</td><td>正八面体</td><td>90°</td><td>SF₆</td>
+    </tr>
+    <tr>
+      <td><span class="hyb-badge" style="background:#EAF3DE;color:#27500A">dsp²</span></td>
+      <td>1d + 1s + 2p</td><td>平方平面</td><td>90°</td><td>[Ni(CN)₄]²⁻, [PtCl₄]²⁻</td>
+    </tr>
+  </table>
 
-      <!-- 3.3.2 填充规则 -->
-      <div class="sub-header" style="margin-top:1.5rem">
-        <span class="sub-num">3.3.2</span>
-        <span class="sub-title">电子填充规则</span>
-      </div>
-      <div class="fill-rules">
-        <div class="fill-rule">
-          <div class="fill-num" style="background:#E6F1FB;color:#185FA5">①</div>
-          <div class="fill-text"><strong>Aufbau 原理</strong>：电子优先占据能量最低的分子轨道</div>
-        </div>
-        <div class="fill-rule">
-          <div class="fill-num" style="background:#EEEDFE;color:#3C3489">②</div>
-          <div class="fill-text"><strong>泡利不相容原理</strong>：每个 MO 最多容纳两个自旋相反的电子</div>
-        </div>
-        <div class="fill-rule">
-          <div class="fill-num" style="background:#E1F5EE;color:#085041">③</div>
-          <div class="fill-text"><strong>洪特规则</strong>：简并 MO 中电子先单占且自旋平行</div>
-        </div>
-      </div>
-
-      <!-- HOMO / LUMO -->
-      <div class="homo-lumo" style="margin-top:1rem">
-        <div class="hl-card" style="background:#E6F1FB;border:0.5px solid #B5D4F4">
-          <div style="font-size:16px;font-weight:800;color:#185FA5;margin-bottom:4px">HOMO</div>
-          <div style="font-size:11px;color:#555;margin-bottom:6px">Highest Occupied MO</div>
-          <div style="font-size:12px;color:#444">最高已占据分子轨道<br>基态下能量最高的含电子轨道</div>
-        </div>
-        <div class="hl-card" style="background:#EEEDFE;border:0.5px solid #CECBF6">
-          <div style="font-size:16px;font-weight:800;color:#3C3489;margin-bottom:4px">LUMO</div>
-          <div style="font-size:11px;color:#555;margin-bottom:6px">Lowest Unoccupied MO</div>
-          <div style="font-size:12px;color:#444">最低未占据分子轨道<br>能量最低的空轨道</div>
-        </div>
-      </div>
-      <div style="background:#fafafa;border-radius:10px;padding:0.75rem 1rem;
-                  border:0.5px solid #eee;font-size:13px;color:#444;margin-top:0.75rem">
-        <strong>HOMO–LUMO 能隙</strong>越大 → 分子越稳定、化学反应性越低；
-        能隙越小 → 分子越活泼、易发生电子跃迁与化学反应。
-      </div>
+  <!-- 三张并排 -->
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin:1.25rem 0">
+    <div class="img-card">
+      <img src="{img_441}" alt="sp杂化">
+      <div class="img-caption">sp 杂化：直线形（180°）</div>
     </div>
     <div class="img-card">
-      <img src="{img_331}" alt="第二周期双原子分子MO能级图">
-      <div class="img-caption">第二周期同核双原子分子 MO 能级图（B₂ 至 Ne₂）</div>
+      <img src="{img_442}" alt="sp2杂化">
+      <div class="img-caption">sp² 杂化：平面三角形（120°）</div>
+    </div>
+    <div class="img-card">
+      <img src="{img_443}" alt="sp3杂化">
+      <div class="img-caption">sp³ 杂化：正四面体（109.5°）</div>
     </div>
   </div>
 
-  <!-- 3.3.3 键级 -->
-  <div class="sub-header">
-    <span class="sub-num">3.3.3</span>
-    <span class="sub-title">键级（Bond Order）</span>
-  </div>
-  <div class="two-col-rev">
+  <!-- 两张并排 -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:1.25rem 0">
     <div class="img-card">
-      <img src="{img_333}" alt="键级对比表">
-      <div class="img-caption">第二周期双原子分子的键级、键长、键能与磁性对比</div>
+      <img src="{img_444}" alt="杂化类型几何构型">
+      <div class="img-caption">常见杂化类型几何构型总览</div>
     </div>
-    <div>
-      <div class="bond-order-box">
-        <div class="bo-formula">
-          \( \text{{键级}} = \dfrac{{N_b - N_a}}{{2}} \)
-        </div>
-        <div class="bo-grid">
-          <div class="bo-item"><strong>\(N_b\)</strong>成键轨道中的电子数</div>
-          <div class="bo-item"><strong>\(N_a\)</strong>反键轨道中的电子数</div>
-          <div class="bo-item"><strong>÷ 2</strong>每个键由两电子组成</div>
-        </div>
-      </div>
-      <p class="body-text">键级越大：</p>
-      <div class="fill-rules">
-        <div class="fill-rule">
-          <div style="width:8px;height:8px;border-radius:50%;background:#378ADD;flex-shrink:0"></div>
-          <div class="fill-text"><strong>键长越短</strong> — 原子核间距越小</div>
-        </div>
-        <div class="fill-rule">
-          <div style="width:8px;height:8px;border-radius:50%;background:#5DCAA5;flex-shrink:0"></div>
-          <div class="fill-text"><strong>键能越大</strong> — 断键所需能量越高</div>
-        </div>
-        <div class="fill-rule">
-          <div style="width:8px;height:8px;border-radius:50%;background:#534AB7;flex-shrink:0"></div>
-          <div class="fill-text"><strong>分子越稳定</strong> — 化学键越牢固</div>
-        </div>
-      </div>
-      <div style="background:#fafafa;border-radius:10px;padding:0.75rem 1rem;
-                  border:0.5px solid #eee;font-size:13px;color:#444;margin-top:0.75rem">
-        键级 = 0 表示该双原子组合<strong>不能稳定存在</strong>（如 He₂）；
-        键级 = 3 表示三键（如 N₂），极为稳定。
+    <div class="img-card">
+      <img src="{img_445}" alt="分子形状与杂化">
+      <div class="img-caption">分子形状、键角与杂化轨道对应关系</div>
+    </div>
+  </div>
+
+  <div class="note-box">
+    <strong>注意：</strong>
+    ① 实际分子中孤对电子占据更大空间，会压缩键角（NH₃ ≈ 107°，H₂O ≈ 104.5°）；
+    ② 在严格的量子化学计算中，杂化轨道是数学构造而非可观测实体，
+    但在结构预测和教学中仍<strong>直观、高效，与 VSEPR 理论互补性强</strong>。
+  </div>
+</div>
+
+<!-- 4.5 共振论 -->
+<div class="section">
+  <div class="section-header">
+    <span class="section-num">4.5</span>
+    <span class="section-title">局限性与共振论（Resonance）</span>
+  </div>
+  <p class="body-text">
+    价键理论在处理<strong>电子非定域化</strong>体系时存在明显不足。
+    例如苯分子中所有 C–C 键长完全相等，介于典型单键与双键之间，单一路易斯结构无法解释。
+    为此引入<strong>共振论</strong>来描述这类体系。
+  </p>
+
+  <div class="blockquote">
+    真实分子结构是多个共振式的叠加（共振杂化体），而不是在不同结构之间来回切换。
+    共振是一种用定域键语言近似描述非定域电子的方法。
+  </div>
+
+  <div class="resonance-rules">
+    <div class="res-title">共振式的书写规则</div>
+    <div class="res-grid">
+      <div class="res-item">✓ <strong>原子核位置不变</strong>，只允许电子移动</div>
+      <div class="res-item">✓ <strong>总电子数守恒</strong>，电荷守恒</div>
+      <div class="res-item">✓ 允许移动：π 电子、孤对电子、离域电荷</div>
+      <div class="res-item">✓ 符合<strong>价键规则</strong>（八隅体等）</div>
+    </div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:1.25rem 0">
+    <div style="background:#FAEEDA18;border-radius:14px;padding:1.2rem;border:0.5px solid #F0C060">
+      <div style="font-size:13px;font-weight:700;color:#633806;margin-bottom:8px">共振能</div>
+      <div style="font-size:13px;color:#444;line-height:1.7">
+        真实分子的能量低于任一共振式，差值称为<strong>共振能</strong>。
+        共振能越大，分子越稳定，电子离域程度越高。
+        <br><br>苯的共振能 ≈ <strong>150 kJ/mol</strong>，是其异常稳定的重要来源。
       </div>
     </div>
+    <div style="background:#fafafa;border-radius:14px;padding:1.2rem;border:0.5px solid #eee">
+      <div style="font-size:13px;font-weight:700;color:#1a1a1a;margin-bottom:8px">贡献更大的共振式</div>
+      <div style="font-size:13px;color:#444;line-height:1.7">
+        · 满足八隅体<br>
+        · 电荷分离最小<br>
+        · 负电荷位于电负性大的原子上<br>
+        · 形式电荷较小
+        <br><br>共振杂化体更接近"优势共振式"，而非简单平均。
+      </div>
+    </div>
+  </div>
+
+  <div class="note-box">
+    <strong>常见误区：</strong>
+    共振不是分子在结构间快速切换；共振式不是真实可分离的结构；
+    键也不会在单键与双键之间交替——真实情况是电子离域，键级为分数值。
+  </div>
+     </div>  <!-- 4.5 section 结束 -->
+    """ + RESONANCE_HTML + """
+    <div class="quote">    
+</div>
+
+<!-- 4.6 MO 与 VB 的关系 -->
+<div class="section">
+  <div class="section-header">
+    <span class="section-num">4.6</span>
+    <span class="section-title">MO 理论与 VB 理论的关系</span>
+  </div>
+  <p class="body-text">
+    严格地说，MO 理论与 VB 理论在数学上是<strong>等价</strong>的，
+    差异主要来源于对电子相关性的处理方式。两者可以通过修正相互逼近：
+  </p>
+  <div class="mv-grid">
+    <div class="mv-card" style="border-color:#B5D4F4">
+      <div class="mv-title" style="color:#185FA5">MO → VB（CI 修正）</div>
+      <div class="mv-formula">
+        \( \Psi_{{\text{{MO}}}}^{{\text{{CI}}}} = c_1 \Psi_{{\text{{共价}}}} + c_2 \Psi_{{\text{{离子}}}} \)
+      </div>
+      <div class="mv-desc">
+        引入<strong>组态相互作用（CI）</strong>修正简单 MO 对离子性的高估。
+        当 \(c_1 \gg c_2\) 时，修正后的 MO 波函数逐渐接近 VB 形式。
+      </div>
+    </div>
+    <div class="mv-card" style="border-color:#F0C060">
+      <div class="mv-title" style="color:#633806">VB → MO（引入离子结构）</div>
+      <div class="mv-formula">
+        \( \Psi_{{\text{{VB}}}} = C_{{\text{{共价}}}} \Psi_{{\text{{共价}}}} + C_{{\text{{离子}}}} \Psi_{{\text{{离子}}}} \)
+      </div>
+      <div class="mv-desc">
+        VB 理论通过引入<strong>离子结构与共振</strong>提高描述精度，
+        适当调整权重后可逼近 MO 描述。
+      </div>
+    </div>
+  </div>
+  <div class="note-box">
+    从分子轨道理论看，共振的本质是<strong>电子离域</strong>，是 π 轨道在多个原子上的展开，
+    不需要多个路易斯结构来描述。但在教学中，共振论简单直观、预测能力强，仍被广泛使用。
   </div>
 </div>
 
 <div class="quote">
-  分子轨道理论从量子力学出发，将成键描述为原子轨道的波函数叠加，<br>
-  为理解化学键本质、分子磁性与反应活性提供了统一的理论框架。
+  价键理论以其直观性和对分子几何构型的强解释力，在化学中占据重要地位。<br>
+  其核心思想——电子定域化配对与最大重叠原则，是理解分子结构不可或缺的理论工具。
 </div>
 
 </body>
 </html>
 """
 
-components.html(HTML, height=4200, scrolling=False)
-
-divider()
-
-st.subheader("🔬 分子轨道能级图可视化")
-st.caption("选择分子或自定义两种原子，自动生成 MO 能级图，显示电子填充、HOMO/LUMO 与键级分析")
-render_mo_tool()
-
-page_footer("mo")
+components.html(HTML, height=7000, scrolling=False)
+page_footer("vb")

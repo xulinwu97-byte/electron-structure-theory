@@ -6,7 +6,7 @@ from utils import page_header, page_footer
 
 st.set_page_config(page_title="理论总结", layout="wide")
 
-page_header("📊 理论总结", "各理论的适用范围与优缺点对比")
+page_header("summary", "各理论的适用范围与优缺点对比")
 
 st.markdown("""
 <style>

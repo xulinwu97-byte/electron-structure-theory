@@ -487,7 +487,7 @@ body{{font-family:-apple-system,BlinkMacSystemFont,'PingFang SC',sans-serif;
 </html>
 """
 
-components.html(HTML, height=5800, scrolling=False)
+components.html(HTML, height=7500, scrolling=False)
 
 divider()
 

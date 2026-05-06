@@ -95,42 +95,64 @@ def count_unpaired_oct(n, high_spin):
 def spin_str(count):
     return {"0":"□","1":"↑","2":"↑↓"}.get(str(count),"□")
 
-def orbital_html(n, high_spin, color_t, color_e):
-    t2g, eg, _ = fill_octahedral(n, high_spin)
+def orbital_html(n, high_spin, color_t, color_e, geom="八面体"):
+    # 计算各轨道填充
     if high_spin:
-        slots=[0]*5; rem=n
+        slots = [0]*5; rem = n
         for i in range(5):
-            if rem>0: slots[i]=1; rem-=1
+            if rem > 0: slots[i] = 1; rem -= 1
         for i in range(5):
-            if rem>0 and slots[i]==1: slots[i]=2; rem-=1
+            if rem > 0 and slots[i] == 1: slots[i] = 2; rem -= 1
     else:
-        t=min(n,6); e_=max(n-6,0)
-        ts=[0,0,0]; rem=t
-        for i in range(3): ts[i]=min(rem,2); rem=max(rem-2,0)
-        es=[0,0]; rem=e_
-        for i in range(2): es[i]=min(rem,2); rem=max(rem-2,0)
-        slots=ts+es
+        t = min(n, 6); e_ = max(n-6, 0)
+        ts = [0,0,0]; rem = t
+        for i in range(3): ts[i] = min(rem,2); rem = max(rem-2,0)
+        es = [0,0]; rem = e_
+        for i in range(2): es[i] = min(rem,2); rem = max(rem-2,0)
+        slots = ts + es
 
-    def box(s,col):
-        sym = spin_str(s)
-        return f'<span style="font-size:18px;color:{col};letter-spacing:2px">{sym}</span>'
+    def arrows(count, color):
+        if count == 0:
+            arrow_html = ""
+        elif count == 1:
+            arrow_html = f'<span style="color:{color};font-size:16px;line-height:1">↑</span>'
+        else:
+            arrow_html = (f'<span style="color:{color};font-size:16px;line-height:1">↑</span>'
+                         f'<span style="color:{color};font-size:16px;line-height:1;margin-left:2px">↓</span>')
+        return f'''<div style="display:flex;flex-direction:column;align-items:center;gap:2px;width:44px">
+          <div style="height:20px;display:flex;align-items:flex-end;justify-content:center;gap:1px">{arrow_html}</div>
+          <div style="width:40px;height:2px;background:currentColor;border-radius:1px"></div>
+        </div>'''
 
-    eg_boxes  = "　".join(box(slots[3+i], color_e) for i in range(2))
-    t2g_boxes = "　".join(box(slots[i],   color_t) for i in range(3))
+    eg_html = "".join(
+        f'<div style="color:{color_e}">{arrows(slots[3+i], color_e)}</div>'
+        for i in range(2)
+    )
+    t2g_html = "".join(
+        f'<div style="color:{color_t}">{arrows(slots[i], color_t)}</div>'
+        for i in range(3)
+    )
 
     return f"""
-    <div style="background:white;border-radius:12px;padding:1rem 1.2rem;
-                border:0.5px solid #eee;text-align:center">
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
-        <div style="font-size:11px;color:{color_e};width:36px;text-align:right;font-weight:600">eₘ</div>
-        <div style="border-top:2px solid {color_e};flex:1;padding-top:6px">{eg_boxes}</div>
-        <div style="font-size:10px;color:{color_e}">+0.6Δ</div>
-      </div>
-      <div style="height:16px;text-align:center;font-size:10px;color:#ccc">── Δ ──</div>
-      <div style="display:flex;align-items:center;gap:10px">
-        <div style="font-size:11px;color:{color_t};width:36px;text-align:right;font-weight:600">t₂ₘ</div>
-        <div style="border-top:2px solid {color_t};flex:1;padding-top:6px">{t2g_boxes}</div>
-        <div style="font-size:10px;color:{color_t}">−0.4Δ</div>
+    <div style="display:flex;justify-content:center;margin:0.5rem 0">
+      <div style="background:white;border-radius:14px;padding:1.2rem 2rem;
+                  border:0.5px solid #eee;min-width:260px;max-width:320px">
+        <div style="margin-bottom:6px">
+          <div style="font-size:10px;color:{color_e};font-weight:600;
+                      text-align:right;margin-bottom:4px">eₘ &nbsp;+0.6Δ</div>
+          <div style="display:flex;justify-content:center;gap:20px;align-items:flex-end">
+            {eg_html}
+          </div>
+        </div>
+        <div style="text-align:center;font-size:10px;color:#ccc;
+                    padding:6px 0;letter-spacing:0.1em">— Δ —</div>
+        <div style="margin-top:6px">
+          <div style="display:flex;justify-content:center;gap:20px;align-items:flex-end">
+            {t2g_html}
+          </div>
+          <div style="font-size:10px;color:{color_t};font-weight:600;
+                      text-align:right;margin-top:4px">t₂ₘ &nbsp;−0.4Δ</div>
+        </div>
       </div>
     </div>"""
 
@@ -193,25 +215,43 @@ def render_cfse_tool():
     .cr-label{{font-size:11px;color:#aaa;letter-spacing:0.06em;text-transform:uppercase;margin-bottom:5px}}
     .cr-val{{font-size:20px;font-weight:600;color:#1a1a1a;line-height:1.2}}
     .cr-sub{{font-size:12px;color:#888;margin-top:2px}}
-    .compare-box{{background:#FAEEDA;border-radius:10px;padding:0.75rem 1.2rem;
-        border:0.5px solid #F0C060;font-size:13px;color:#633806;margin:0.75rem 0}}
     </style>
-    <div class="compare-box">
-      <strong>d 电子数：</strong>d{n} &nbsp;|&nbsp;
-      <strong>配对能 P：</strong>{P:.1f} eV &nbsp;|&nbsp;
-      <strong>配体类型：</strong>{ligand["type"]} &nbsp;|&nbsp;
-      <strong>Δ ({geom})：</strong>{delta:.2f} eV<br>
-      <strong>判断：</strong>{compare}
+
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:0.75rem 0">
+      <div class="cr-card">
+        <div class="cr-label">d 电子数</div>
+        <div class="cr-val" style="color:#185FA5">d{n}</div>
+        <div class="cr-sub">{metal_key}</div>
+      </div>
+      <div class="cr-card">
+        <div class="cr-label">配对能 P</div>
+        <div class="cr-val">{P:.1f} eV</div>
+        <div class="cr-sub">克服配对所需能量</div>
+      </div>
+      <div class="cr-card">
+        <div class="cr-label">Δ ({geom})</div>
+        <div class="cr-val" style="color:#D85A30">{delta:.2f} eV</div>
+        <div class="cr-sub">{ligand["type"]}</div>
+      </div>
+      <div class="cr-card" style="background:{'#E1F5EE' if '低自旋' in auto_spin else '#FAECE7'};
+           border-color:{'#9FE1CB' if '低自旋' in auto_spin else '#F5C4B3'}">
+        <div class="cr-label">判断结果</div>
+        <div class="cr-val" style="color:{'#085041' if '低自旋' in auto_spin else '#712B13'};font-size:16px">
+          {auto_spin}
+        </div>
+        <div class="cr-sub">{compare}</div>
+      </div>
     </div>
     """, unsafe_allow_html=True)
 
     if show_both:
         col_hs, col_ls = st.columns(2)
-        sides = [(col_hs,"高自旋",True,"#D85A30","#185FA5"),
-                 (col_ls,"低自旋",False,"#712B13","#0C447C")]
+        sides = [(col_hs, "高自旋", True,  "#D85A30", "#185FA5"),
+                 (col_ls, "低自旋", False, "#712B13", "#0C447C")]
     else:
-        col_only = st.columns(1)[0]
-        sides = [(col_only, auto_spin, high_spin_auto, "#D85A30","#185FA5")]
+        # 单构型：居中占一半，用3列取中间列
+        _, col_only, _ = st.columns([1, 2, 1])
+        sides = [(col_only, auto_spin, high_spin_auto, "#D85A30", "#185FA5")]
 
     for col, label, hs_flag, col_e, col_t in sides:
         t2g_n, eg_n, extra_p, cfse_dq, unpaired = calc_cfse_oct(n, hs_flag)
@@ -231,7 +271,7 @@ def render_cfse_tool():
               </div>
             """, unsafe_allow_html=True)
 
-            st.markdown(orbital_html(n, hs_flag, col_t, col_e), unsafe_allow_html=True)
+            st.markdown(orbital_html(n, hs_flag, col_t, col_e, geom), unsafe_allow_html=True)
 
             st.markdown(f"""
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px">
@@ -262,11 +302,11 @@ def render_cfse_tool():
     if show_both:
         hs_data = calc_cfse_oct(n, True)
         ls_data = calc_cfse_oct(n, False)
-        net_cfse = round((ls_data[3]-hs_data[3])*delta, 3)
-        net_pair = round((ls_data[2]-hs_data[2])*P, 3)
-        net_total= round(net_cfse - net_pair, 3)
+        net_cfse  = round((ls_data[3] - hs_data[3]) * delta, 3)
+        net_pair  = round((ls_data[2] - hs_data[2]) * P, 3)
+        net_total = round(net_cfse - net_pair, 3)
         favor = "低自旋更稳定" if net_total < 0 else "高自旋更稳定"
-        color  = "#085041" if net_total < 0 else "#712B13"
+        color = "#085041" if net_total < 0 else "#712B13"
         st.markdown(f"""
         <div style="background:#f8f8fa;border-radius:10px;padding:0.85rem 1.2rem;
                     border:0.5px solid #eee;font-size:13px;color:#444;margin-top:0.75rem">

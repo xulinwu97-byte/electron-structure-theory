@@ -30,25 +30,21 @@ def _fill_electrons(slots, total_e):
     occ = [0] * n
     rem = total_e
 
-    # 按能量分组
     groups = []
     for _, grp in groupby(range(n), key=lambda i: round(slots[i]['e'], 4)):
         groups.append(list(grp))
 
     for grp in groups:
         if len(grp) == 1:
-            # 非简并轨道：直接填满（最多2个）
             idx = grp[0]
             fill = min(rem, 2)
             occ[idx] = fill
             rem -= fill
         else:
-            # 简并轨道：第一轮先每个填1个
             for idx in grp:
                 if rem > 0:
                     occ[idx] = 1
                     rem -= 1
-            # 第二轮再配对
             for idx in grp:
                 if rem > 0 and occ[idx] == 1:
                     occ[idx] = 2
@@ -189,22 +185,42 @@ def render_mo_tool():
                 showarrow=False, align="right", xanchor='right',
                 font=dict(size=11))
             if abs(ty - me) > 0.1:
+                # ── 改进：label引导线更明显 ──
                 fig.add_trace(go.Scatter(
                     x=[MX_C-0.21, MX_C-0.18], y=[ty, me], mode='lines',
-                    line=dict(color="rgba(150,150,150,0.25)", width=0.6),
+                    line=dict(color="rgba(120,120,120,0.45)", width=1.2, dash='dot'),
                     hoverinfo='skip'))
             label_ptr += 1
 
+        # ── 改进：电子箭头更大更醒目，加彩色圆形背景 ──
         if slot_occ[i] == 2:
-            fig.add_annotation(x=MX_C+offset, y=me, text="↑↓",
-                showarrow=False, font=dict(size=20, color="#B8860B"))
+            # 先画背景圆
+            fig.add_trace(go.Scatter(
+                x=[MX_C + offset], y=[me],
+                mode='markers',
+                marker=dict(size=28, color="rgba(230,195,40,0.18)",
+                            line=dict(color="rgba(184,134,11,0.5)", width=1.5)),
+                hoverinfo='skip'))
+            fig.add_annotation(
+                x=MX_C + offset, y=me, text="↑↓",
+                showarrow=False,
+                font=dict(size=24, color="#8B6914", family="Arial"))
         elif slot_occ[i] == 1:
-            fig.add_annotation(x=MX_C+offset, y=me, text="↑",
-                showarrow=False, font=dict(size=20, color="#B8860B"))
+            fig.add_trace(go.Scatter(
+                x=[MX_C + offset], y=[me],
+                mode='markers',
+                marker=dict(size=28, color="rgba(230,195,40,0.18)",
+                            line=dict(color="rgba(184,134,11,0.5)", width=1.5)),
+                hoverinfo='skip'))
+            fig.add_annotation(
+                x=MX_C + offset, y=me, text="↑",
+                showarrow=False,
+                font=dict(size=24, color="#8B6914", family="Arial"))
 
+        # ── 改进：AO→MO 连接线更明显 ──
         pa = ea_s if s['ref']['type'] == 's' else ea_p
         pb = eb_s if s['ref']['type'] == 's' else eb_p
-        dot = dict(color="rgba(180,180,180,0.28)", width=0.8, dash='dot')
+        dot = dict(color="rgba(120,140,180,0.55)", width=1.4, dash='dash')
         fig.add_trace(go.Scatter(
             x=[AX_X[1], x_r[0]], y=[pa, me],
             mode='lines', line=dot, hoverinfo='skip'))
@@ -216,9 +232,12 @@ def render_mo_tool():
         template="none", height=780, showlegend=False,
         xaxis=dict(visible=False, range=[-0.05, 1.05]),
         yaxis=dict(
-            title="Energy (eV)", ticksuffix=" eV",
-            gridcolor="#F4F6F7", zeroline=False,
-            showline=True, linecolor="#D5DBDB"),
+            # ── 修复：去掉 ticksuffix，单位写进 title 避免 "ext" bug ──
+            title="能量 / eV",
+            showgrid=True, gridcolor="#F4F6F7",
+            zeroline=False, showline=True, linecolor="#D5DBDB",
+            showexponent="none",   # 关闭科学计数法指数显示
+        ),
         margin=dict(l=80, r=80, t=20, b=20),
         plot_bgcolor="white", paper_bgcolor="white"
     )

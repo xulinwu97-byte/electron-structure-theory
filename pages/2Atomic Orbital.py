@@ -353,7 +353,7 @@ body{{
 </html>
 """
 
-components.html(HTML, height=3500, scrolling=False)
+components.html(HTML, height=5000, scrolling=False)
 
 divider()
 

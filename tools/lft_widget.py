@@ -7,10 +7,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'PingFang SC',sans-serif}
   background:white;color:#666;font-size:13px;cursor:pointer;transition:all 0.15s}
 .lft-tab.active{background:#FBEAF0;border-color:#F4C0D1;color:#72243E;font-weight:500}
 .lft-panel{display:none}.lft-panel.active{display:block}
-canvas{display:block}
 .lft-caption{font-size:12px;color:#888;text-align:center;
   margin-top:8px;line-height:1.6;padding:0 0.5rem}
-.lft-ctrl{display:flex;justify-content:center;gap:10px;margin:10px 0;flex-wrap:wrap}
+.lft-ctrl{display:flex;gap:10px;margin:10px 0;flex-wrap:wrap}
 .lft-btn{padding:6px 16px;border-radius:10px;border:0.5px solid #e0e0e0;
   background:white;color:#666;font-size:13px;cursor:pointer}
 .lft-btn:hover{background:#f5f5f5}
@@ -19,6 +18,9 @@ canvas{display:block}
 .lft-ic{background:#fafafa;border-radius:10px;padding:0.75rem;text-align:center;border:0.5px solid #eee}
 .lft-ic-label{font-size:11px;color:#aaa;margin-bottom:4px}
 .lft-ic-val{font-size:15px;font-weight:500;color:#1a1a1a}
+/* 核心：固定宽度父容器，canvas width:100% 相对于此容器，按钮天然同宽对齐 */
+.lft-wrap{width:620px;max-width:100%}
+.lft-wrap canvas{width:100%;display:block;border-radius:12px;border:0.5px solid #eee}
 </style>
 
 <div style="padding:1rem">
@@ -29,38 +31,40 @@ canvas{display:block}
 </div>
 
 <div id="lft-bb" class="lft-panel active">
-  <canvas id="lft-c-bb" width="620" height="290"
-    style="width:100%;border-radius:12px;border:0.5px solid #eee"></canvas>
-  <div class="lft-ctrl">
-    <button class="lft-btn lft-active" id="lft-bb-donor" onclick="lftBBMode('donor',this)">π 供体（Cl⁻）</button>
-    <button class="lft-btn" id="lft-bb-none" onclick="lftBBMode('none',this)">纯 σ 供体（NH₃）</button>
-    <button class="lft-btn" id="lft-bb-acceptor" onclick="lftBBMode('acceptor',this)">π 受体（CO）</button>
-  </div>
-  <div class="lft-info">
-    <div class="lft-ic"><div class="lft-ic-label">配体类型</div><div class="lft-ic-val" id="lft-bb-type">π 供体</div></div>
-    <div class="lft-ic"><div class="lft-ic-label">t₂g 能级</div><div class="lft-ic-val" id="lft-bb-t2g">↑ 升高</div></div>
-    <div class="lft-ic"><div class="lft-ic-label">Δo 变化</div><div class="lft-ic-val" id="lft-bb-delta">↓ 减小</div></div>
-  </div>
-  <div class="lft-caption">
-    动画展示 π 键合如何影响 t₂g 能级：π 供体推高 t₂g（Δo 减小），π 受体拉低 t₂g（Δo 增大）。
+  <div class="lft-wrap">
+    <canvas id="lft-c-bb" width="620" height="290"></canvas>
+    <div class="lft-ctrl">
+      <button class="lft-btn lft-active" id="lft-bb-donor" onclick="lftBBMode('donor',this)">π 供体（Cl⁻）</button>
+      <button class="lft-btn" id="lft-bb-none" onclick="lftBBMode('none',this)">纯 σ 供体（NH₃）</button>
+      <button class="lft-btn" id="lft-bb-acceptor" onclick="lftBBMode('acceptor',this)">π 受体（CO）</button>
+    </div>
+    <div class="lft-info">
+      <div class="lft-ic"><div class="lft-ic-label">配体类型</div><div class="lft-ic-val" id="lft-bb-type">π 供体</div></div>
+      <div class="lft-ic"><div class="lft-ic-label">t₂g 能级</div><div class="lft-ic-val" id="lft-bb-t2g">↑ 升高</div></div>
+      <div class="lft-ic"><div class="lft-ic-label">Δo 变化</div><div class="lft-ic-val" id="lft-bb-delta">↓ 减小</div></div>
+    </div>
+    <div class="lft-caption">
+      动画展示 π 键合如何影响 t₂g 能级：π 供体推高 t₂g（Δo 减小），π 受体拉低 t₂g（Δo 增大）。
+    </div>
   </div>
 </div>
 
 <div id="lft-pd" class="lft-panel">
-  <canvas id="lft-c-pd" width="620" height="290"
-    style="width:100%;border-radius:12px;border:0.5px solid #eee"></canvas>
-  <div class="lft-ctrl" id="lft-pd-btns"></div>
-  <div class="lft-caption">
-    点击配体查看 CFT 静电预测值（灰色虚线）与实验测量值（彩色实线）的差异。<br>
-    CFT 预测"电荷越高 Δ 越大"，但实验结果完全相反。
+  <div class="lft-wrap">
+    <canvas id="lft-c-pd" width="620" height="290" style="cursor:pointer"></canvas>
+    <div class="lft-caption">
+      点击配体查看 CFT 静电预测值（灰色虚线）与实验测量值（彩色实线）的差异。<br>
+      CFT 预测"电荷越高 Δ 越大"，但实验结果完全相反。
+    </div>
   </div>
 </div>
 
 <div id="lft-sp" class="lft-panel">
-  <canvas id="lft-c-sp" width="620" height="290"
-    style="width:100%;border-radius:12px;border:0.5px solid #eee"></canvas>
-  <div class="lft-caption">
-    点击配体，查看其 π 相互作用类型及 t₂g / eg* 能级的变化方式。
+  <div class="lft-wrap">
+    <canvas id="lft-c-sp" width="620" height="290"></canvas>
+    <div class="lft-caption">
+      点击配体，查看其 π 相互作用类型及 t₂g / eg* 能级的变化方式。
+    </div>
   </div>
 </div>
 </div>
@@ -175,13 +179,31 @@ const LPDS=[
   {name:'CO',  charge:0, exp:3.50,cft:1.2,col:'#A32D2D'},
 ];
 let pdSel=null;
-const pdBtns2=document.getElementById('lft-pd-btns');
-LPDS.forEach((l,i)=>{
-  const b=document.createElement('button');
-  b.className='lft-btn'; b.textContent=l.name;
-  b.style.borderColor=l.col;
-  b.onclick=()=>{pdSel=i;drawPD();};
-  pdBtns2.appendChild(b);
+// 点击柱子选中/取消
+pd.style.cursor='pointer';
+pd.addEventListener('click',e=>{
+  const r=pd.getBoundingClientRect();
+  const mx=(e.clientX-r.left)*(pd.width/r.width);
+  const my=(e.clientY-r.top)*(pd.height/r.height);
+  const bW=44,gap=16,sx0=30,H=pd.height;
+  let hit=-1;
+  LPDS.forEach((l,i)=>{
+    const x=sx0+i*(bW+gap);
+    if(mx>=x && mx<=x+bW && my>=20 && my<=H-10) hit=i;
+  });
+  if(hit>=0){ pdSel=(pdSel===hit)?null:hit; drawPD(); }
+});
+pd.addEventListener('mousemove',e=>{
+  const r=pd.getBoundingClientRect();
+  const mx=(e.clientX-r.left)*(pd.width/r.width);
+  const my=(e.clientY-r.top)*(pd.height/r.height);
+  const bW=44,gap=16,sx0=30,H=pd.height;
+  let hit=-1;
+  LPDS.forEach((l,i)=>{
+    const x=sx0+i*(bW+gap);
+    if(mx>=x && mx<=x+bW && my>=20 && my<=H-10) hit=i;
+  });
+  pd.style.cursor=hit>=0?'pointer':'default';
 });
 function drawPD(){
   const W=pd.width,H=pd.height,n=LPDS.length;
